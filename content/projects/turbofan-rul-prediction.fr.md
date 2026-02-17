@@ -16,7 +16,6 @@ disableShare: true
 ShowReadingTime: false
 ShowBreadCrumbs: false
 math: true
-featured: true
 ---
 
 ## Overview

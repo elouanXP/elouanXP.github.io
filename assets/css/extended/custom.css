@@ -1,0 +1,31 @@
+/* Logo dans le header */
+.logo a img {
+    width: 50px !important;
+    height: 50px !important;
+    transform: translateY(2px) !important;
+}
+
+.logo a img {
+    width:50px !important;
+    height: 50px !important;
+    transform: translateY(2px) !important;
+}
+
+/* Ajuster l'espacement */
+.logo a {
+    display: flex !important;
+    align-items: center !important;
+    gap: .2rem !important;
+}
+
+
+.post-content p {
+    text-align: justify;
+}
+
+.list article:first-of-type {
+  border-left: 6px solid #000;
+  padding-left: 16px;
+}
+
+

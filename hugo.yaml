@@ -1,9 +1,10 @@
 baseURL: "https://elouanXP.github.io/"
-title: "Elouan Pulveric"
+title: "Elouan Pulvéric"
 pagination:
-  pagerSize: 5
+  pagerSize: 10
 theme: PaperMod
-languageCode: en-us
+defaultContentLanguage: en
+defaultContentLanguageInSubdir: false
 
 enableRobotsTXT: true
 buildDrafts: false
@@ -17,31 +18,33 @@ minify:
 params:
   math: true
   env: production
-  title: "Elouan Pulveric"
-  description: "Data Scientist & ML Engineer — Arts et Métiers · UC Berkeley · Former French Special Forces"
-  keywords: [Data Science, Machine Learning, MLOps, Predictive Maintenance, Python]
-  author: Elouan Pulveric
+  title: "elouanXP"
+  description: "Portfolio"
+  keywords: [Data Science, Machine Learning, AI, Python]
+  author: Elouan Pulvéric
+  hideAuthor: true
+  hideTags: true
+  label:
+    text: "Elouan Pulvéric"
+    icon: "/images/logo.png"
+
 
   # ── Profile mode (homepage) ─────────────────────────────────────────────
   profileMode:
     enabled: true
-    title: "Elouan Pulveric"
+    title: "👋 Welcome to my website"
     subtitle: |
-      **Data Scientist & ML Engineer**  
-      Arts et Métiers · UC Berkeley MSc · Former French Special Forces (1er RPIMa)  
-      
-      Building end-to-end ML systems for industrial and safety-critical applications.  
-      Currently open to **Data Scientist · ML Engineer · AI Engineer** opportunities.
-    imageUrl: ""
+      This blog showcases my projects and experiments in Data Science and AI.
+    imageUrl: "images/profile.png"
     imageWidth: 120
     imageHeight: 120
-    imageTitle: "Elouan Pulveric"
+    imageTitle: "Elouan Pulvéric"
     buttons:
       - name: Projects
         url: /projects
       - name: About
         url: /about
-      - name: CV
+      - name: Resume
         url: /cv.pdf
 
   # ── Social icons ─────────────────────────────────────────────────────────
@@ -51,18 +54,18 @@ params:
     - name: email
       url: "mailto:elouan.pulveric@gmail.com"
     - name: linkedin
-      url: "https://linkedin.com/in/elouan-pulveric"
+      url: "https://linkedin.com/in/epx"
 
   # ── Navigation ───────────────────────────────────────────────────────────
   homeInfoParams:
     enabled: false
 
   # ── Style ────────────────────────────────────────────────────────────────
-  defaultTheme: dark
+  defaultTheme: light
   disableThemeToggle: false
-  ShowReadingTime: true
+  ShowReadingTime: false
   ShowShareButtons: false
-  ShowPostNavLinks: true
+  ShowPostNavLinks: false
   ShowBreadCrumbs: true
   ShowCodeCopyButtons: true
   ShowWordCount: false
@@ -78,11 +81,12 @@ params:
 
   assets:
     disableHLJS: true
-    favicon: ""
+    favicon: "/images/favicon.ico"
     favicon16x16: ""
     favicon32x32: ""
     apple_touch_icon: ""
     safari_pinned_tab: ""
+
 
   cover:
     hidden: false
@@ -104,23 +108,68 @@ params:
     limit: 10
     keys: ["title", "permalink", "summary", "content"]
 
-menu:
-  main:
-    - identifier: projects
-      name: Projects
-      url: /projects/
-      weight: 10
-    - identifier: about
-      name: About
-      url: /about/
-      weight: 20
-    - identifier: search
-      name: Search
-      url: /search/
-      weight: 30
+languages:
+  en:
+    languageName: "EN"
+    weight: 1
+    menu:
+      main:
+        - identifier: projects
+          name: Projects
+          url: /projects/
+          weight: 10
+        - identifier: about
+          name: About
+          url: /about/
+          weight: 20
+        - identifier: cv
+          name: Resume
+          url: /resume/
+          weight: 30
+  fr:
+    languageName: "FR"
+    weight: 2
+    title: "Elouan Pulvéric"
+    params:
+      description: "description"
+      profileMode:
+        enabled: true
+        title: "👋 Bienvenue sur mon site"
+        subtitle: |
+          Je poste ici mes projets et travaux en Data Science et Intelligence Artificielle.
+
+        imageUrl: "images/profile.png"
+        imageWidth: 120
+        imageHeight: 120
+        buttons:
+          - name: Projets
+            url: /fr/projects
+          - name: À propos
+            url: /fr/about
+          - name: CV
+            url: /cv.pdf
+    menu:
+      main:
+        - identifier: projects
+          name: Projets
+          url: /fr/projects/
+          weight: 10
+        - identifier: about
+          name: À propos
+          url: /fr/about/
+          weight: 20
+        - identifier: cv
+          name: CV
+          url: /fr/cv/
+          weight: 30
 
 outputs:
   home:
     - HTML
     - RSS
     - JSON
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true

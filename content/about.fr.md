@@ -26,7 +26,7 @@ Je suis diplômé d’un double cursus d’ingénieur aux <a href="https://artse
 
 </div>
 
-De retour en France, j’ai rejoint le Ministère de l’Intérieur (<a href="https://www.linkedin.com/posts/patrick-perrot_ia-activity-7074803626442940417-akvv/?utm_source=share&utm_medium=member_desktop&rcm=ACoAACc4pCMBfG9wMxw7Jjb53oexLHRD-DYRYRE" target="_blank">Direction Générale de la Gendarmerie Nationale</a>) en tant que stagiaire ingénieur en intelligence artificielle. J’ai travaillé sur des projets de deep learning appliqués à des fins opérationnelles tels que la détection de deepfakes et la génération de portraits-robots pour les forces de l’ordre.
+De retour en France, j’ai rejoint le Ministère de l’Intérieur (<a href="https://www.linkedin.com/posts/patrick-perrot_ia-activity-7074803626442940417-akvv/?utm_source=share&utm_medium=member_desktop&rcm=ACoAACc4pCMBfG9wMxw7Jjb53oexLHRD-DYRYRE" target="_blank">Direction Générale de la Gendarmerie Nationale</a>) en tant que stagiaire ingénieur en intelligence artificielle. J’y ai travaillé sur des projets de deep learning appliqués à des fins opérationnelles, tels que la génération de portraits-robots photoréalistes pour les forces de l’ordre.
 
 Après l’obtention de mon diplôme, je me suis engagé dans l'Armée et j’ai passé les sélections et suivi la formation du <a href="https://www.sengager.fr/tous-nos-regiments/1er-regiment-de-parachutistes-dinfanterie-de-marine" target="_blank">1er RPIMa</a> - un régiment de forces spéciales spécialisé dans le contre-terrorisme et la libération d'otages - en tant que parachutiste. Cette expérience a notamment renforcé ma résilience, ma capacité à rester concentré et fiable sous pression, ainsi que mon sens du travail en équipe.
 

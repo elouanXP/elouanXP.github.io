@@ -1,0 +1,24 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Correction forcée des liens CV en français
+  const menuLinks = document.querySelectorAll('nav a');
+  menuLinks.forEach(link => {
+    let href = link.getAttribute('href');
+    
+    // Si le lien contient /fr/ suivi d'un chemin vers PDF, on corrige
+    if (href && href.includes('/fr/') && href.includes('.pdf')) {
+      // Enlève tout préfixe et garde juste le fichier
+      const filename = href.split('/').pop().split('?')[0];
+      if (filename.endsWith('.pdf')) {
+        link.setAttribute('href', '/' + filename);
+      }
+    }
+  });
+  
+  // Ouvre tous les PDF dans un nouvel onglet
+  document.querySelectorAll('a[href$=".pdf"]').forEach(link => {
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+  });
+});
+</script>

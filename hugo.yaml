@@ -45,7 +45,7 @@ params:
       - name: About
         url: /about
       - name: Resume
-        url: /cv.pdf
+        url: /resume_elouan_pulveric.pdf
 
   # ── Social icons ─────────────────────────────────────────────────────────
   socialIcons:
@@ -124,7 +124,7 @@ languages:
           weight: 20
         - identifier: cv
           name: Resume
-          url: /resume/
+          url: /resume_elouan_pulveric.pdf
           weight: 30
   fr:
     languageName: "FR"
@@ -147,7 +147,7 @@ languages:
           - name: À propos
             url: /fr/about
           - name: CV
-            url: /cv.pdf
+            url: /cv_elouan_pulveric.pdf
     menu:
       main:
         - identifier: projects
@@ -160,7 +160,7 @@ languages:
           weight: 20
         - identifier: cv
           name: CV
-          url: /fr/cv/
+          url: /cv_elouan_pulveric.pdf
           weight: 30
 
 outputs:

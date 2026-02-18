@@ -26,7 +26,7 @@ At Berkeley, I worked as a Graduate Student Researcher at the <a href="https://h
 
 </div>
 
-Back in France, I joined the French Interior Ministry (<a href="https://www.linkedin.com/posts/patrick-perrot_ia-activity-7074803626442940417-akvv/?utm_source=share&utm_medium=member_desktop&rcm=ACoAACc4pCMBfG9wMxw7Jjb53oexLHRD-DYRYRE" target="_blank">General Directorate of the National Gendarmerie</a>) as an AI Engineer intern, working on applied deep learning projects such as deepfake detection and facial composite generation for law enforcement.
+Back in France, I joined the French Interior Ministry (<a href="https://www.linkedin.com/posts/patrick-perrot_ia-activity-7074803626442940417-akvv/?utm_source=share&utm_medium=member_desktop&rcm=ACoAACc4pCMBfG9wMxw7Jjb53oexLHRD-DYRYRE" target="_blank">General Directorate of the National Gendarmerie</a>) as an AI Engineer intern, working on applied deep learning projects such as facial composite enhancement for law enforcement.
 
 After graduating, I underwent selection and training within the <a href="https://www.sengager.fr/tous-nos-regiments/1er-regiment-de-parachutistes-dinfanterie-de-marine" target="_blank">1st RPIMa</a> - a French special forces regiment specialized in counter-terrorism and intelligence operations - as a paratrooper. This experience taught me resilience, effective teamwork, reliability under pressure, and sustained focus in high-stakes environments.
 

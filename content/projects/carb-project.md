@@ -106,8 +106,6 @@ work = most_freq_location(user, time_range="7am-7pm", weekdays_only=True, min_vi
 
 ## 4- Methodology
 
-Three distinct algorithmic problems, each requiring a different approach.
-
 ### Algorithm 1 - Mode Detection via GMM
 
 No labeled trip data is available so we cannot train a supervised classifier because we do not know the ground truth mode for any trip. We need to infer travel mode purely from the structure of the data itself. Two signals suffice to separate motorized from non-motorized trips: how fast the trip went, and what distance it covered. A car trip and a walking trip occupy very different regions in (speed, distance) space. Even without labels, these clusters should be visible.
@@ -183,7 +181,7 @@ COVID-19 did not change the within-the-week variation in VMT, the weekly pattern
 
 ![carb-overview.png](/images/img7.png)
 
-No notable differences across different income groups in VMT reduction. Quicker rebound in VMT for tracts of higher income, potentially due to greater flexibility and feasibility of remote work.
+No notable differences across different income groups in VMT reduction. Tracts with higher median income showed a faster VMT rebound, likely reflecting greater flexibility for remote work.
 
 ![carb-overview.png](/images/img8.png)
 
@@ -201,7 +199,7 @@ The distance distribution during this crisis window was bimodal: one mode at ~50
 
 ---
 
-### Trip purpose
+### Trip purpose & commute network fragmentation
 
 Non-commute travel (shopping, leisure) recovered to near-baseline levels by 2022. Commute trips did not — the work-to-non-work ratio never returned to its pre-pandemic level. Remote and hybrid work restructured not just where people work, but the fundamental shape of California's daily travel demand.
 

@@ -3,7 +3,7 @@ title: "Impact du COVID-19 sur la mobilité en Californie"
 date: 2023-05-09
 draft: false
 categories: ["Data Science", "Transportation", "Public Policy"]
-summary: "Étude analysant les déplacements de +2,4M d'utilisateurs californiens pour orienter la politique de réduction des GES de la Californie à horizon 2030 - machine learning, analyse géospatiale big data et science des réseaux."
+summary: "Étude analysant les déplacements de +2,4M d'utilisateurs pour orienter la politique de réduction des GES de la Californie à horizon 2030 - machine learning, analyse géospatiale big data et data science."
 cover:
   image: ""
   alt: "COVID-19 et analyse de mobilité"
@@ -22,7 +22,7 @@ math: true
 
 ## 1- Vue d'ensemble
 
-**Étude analysant les déplacements de +2,4M d'utilisateurs californiens pour orienter la politique de réduction des GES de la Californie à horizon 2030 - machine learning, analyse géospatiale big data et science des réseaux.**
+**Étude analysant les déplacements de +2,4M d'utilisateurs californiens pour orienter la politique de réduction des GES de la Californie à horizon 2030 - machine learning, analyse géospatiale big data et data science.**
 
 ![carb-overview.png](/images/img1.png)
 
@@ -228,7 +228,7 @@ Le réseau a perdu 38,7% de ses arêtes en 2020. Deux nouvelles communautés iso
 
 - **Zones rurales :** La dépendance automobile a persisté précisément là où les alternatives sont absentes. L'infrastructure de recharge pour véhicules électriques et les voies de covoiturage répondent à la question des émissions sans exiger de changement comportemental.
 
-- **Télétravail :** Il est désormais structurellement ancré dans le marché du travail californien. La politique d'utilisation des sols devrait s'adapter en encourageant le développement résidentiel près des pôles d'emploi en banlieue et en réduisant les VMT lié aux trajets domicile-travail.
+- **Télétravail :** Il est désormais structurellement ancré dans le marché du travail californien. La politique d'utilisation des sols devrait s'adapter en encourageant le développement résidentiel près des pôles d'emploi en banlieue et en réduisant les VMT liés aux trajets domicile-travail.
 
 - **Micromobilité :** C'est la seule catégorie d'intervention ayant montré un effet mesurable sur le report modal. La politique devrait prioriser la densité de déploiement rapide plutôt que l'étendue géographique.
 

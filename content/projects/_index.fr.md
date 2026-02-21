@@ -1,5 +1,5 @@
 ---
-title: "Projects"
+title: "Projets"
 date: 2026-02-15
 draft: false
 hidemeta: true
@@ -10,5 +10,5 @@ ShowReadingTime: false
 ShowBreadCrumbs: false
 ---
 
-A selection of end-to-end ML and data science projects.  
-All source code available on <a href="https://github.com/elouanXP/" target="_blank">**GitHub**</a>.
+Une sélection de mes projets et expériences en science des données et machine learning.  
+Les répertoires disponibles sont sur ma page <a href="https://github.com/elouanXP/" target="_blank">**GitHub**</a>.

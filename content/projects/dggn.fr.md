@@ -1,339 +1,227 @@
 ---
-title: "AI-Powered Facial Composite Enhancement for Law Enforcement"
+title: "Génération de visages photoréalistes à partir de portraits-robots"
 date: 2023-08-31
 draft: false
-categories: ["Computer Vision", "Generative AI", "Public Safety"]
-tags: ["Python", "Deep Learning", "GANs", "Image-to-Image Translation", "PyTorch", "Computer Vision"]
-summary: "Developed a generative AI system to transform hand-drawn facial composites into photorealistic images for the French National Gendarmerie, improving suspect identification capabilities through conditional GANs and image-to-image translation."
+categories: ["Computer Vision", "Generative AI", "Deep Learning"]
+summary: "Sketch-to-face, concepts & architectures. De l'autoencoder au U-Net jusqu'au Pix2Pix (GAN conditionnel)."
 cover:
-  # image: "/images/facial-composite-results.png"
-  alt: "Facial composite to realistic photo transformation"
+  alt: "Portrait-robot vers photo réaliste"
   relative: false
 showToc: true
 TocOpen: false
 hidemeta: false
 comments: false
 disableShare: true
-ShowReadingTime: true
-ShowBreadCrumbs: true
+ShowReadingTime: false
+ShowBreadCrumbs: false
 math: true
 ---
 
-## Project Overview
+## 1- Vue d'ensemble
 
-During my engineering internship at the **Direction Générale de la Gendarmerie Nationale (DGGN)** — France's national police force — I developed an AI-powered system to transform hand-drawn facial composites (portrait-robots) into photorealistic images. This tool aims to enhance suspect identification by bridging the gap between witness descriptions and investigative photography.
+> **Note :** Cette page est une note personnelle des concepts et architectures des modèles image-to-image explorés pendant mon passage à la Direction Générale de la Gendarmerie Nationale, illustrée par une petite application sur le dataset public CUHK de croquis de visages.
 
-**Organization:** Direction Générale de la Gendarmerie Nationale (French National Gendarmerie)  
-**Location:** Issy-les-Moulineaux, France  
-**Duration:** June 2023 - August 2023 (3 months)  
-**Supervisor:** Patrick Perrot, AI Innovation Team  
-**Classification:** Law Enforcement / Public Safety AI
+**Sketch-to-face — Concepts & Architectures**
 
-## Context & Motivation
+![dggn-sketch-to-photo.png](/images/face.png)
 
-### The Challenge
+---
 
-Traditional facial composites created by forensic sketch artists serve a critical role in criminal investigations, but they face several limitations:
+## 2- Contexte & Motivation
 
-1. **Abstraction Gap:** Hand-drawn sketches lack the photorealistic detail needed for effective public dissemination and facial recognition systems
-2. **Witness Memory Limitations:** Descriptions are often incomplete or inconsistent
-3. **Artist Availability:** Forensic sketch artists are scarce resources in law enforcement agencies
-4. **Public Perception:** The public more readily recognizes photographs than stylized drawings
+### Problématique
 
-### Project Goal
+Les portraits-robots sont l'outil principal des enquêteurs lorsqu'aucune photographie du suspect n'est disponible. Produits à partir des descriptions des témoins, ce sont des croquis qui capturent la géométrie du visage mais perdent toute information sur la texture, la couleur, la peau, l'éclairage et le réalisme photographique. Le défi est de générer une image photoréaliste à partir de toutes ces informations manquantes de manière à la fois :
 
-Develop a deep learning system that automatically transforms facial composites into photorealistic portraits while preserving key identifying features, enabling:
-- More effective public appeals (BOLO - Be On the Lookout)
-- Compatibility with facial recognition databases
-- Faster investigative workflows
-- Enhanced witness engagement (seeing realistic renderings may trigger additional memories)
+- Structurellement fidèle : le visage généré doit correspondre à la géométrie du croquis
+- Photoréaliste : il doit ressembler à une vraie photographie
+- Généralisable : il doit fonctionner sur des croquis jamais vus lors de l'entraînement
 
-## My Role & Contributions
+Il s'agit d'un problème d'**image-to-image translation** : le modèle doit apprendre une correspondance complexe d'un domaine visuel (croquis) vers un autre (photographies), sans supervision intermédiaire sur ce que devrait être la texture manquante.
 
-As the sole AI engineer on this project, I was responsible for:
+### Objectif de cette page
 
-- **Research & Design:** Surveying state-of-the-art generative models for image-to-image translation
-- **Model Development:** Implementing and training conditional GANs for composite-to-photo transformation
-- **Data Pipeline:** Preprocessing facial composite datasets and pairing with photographic references
-- **Evaluation:** Assessing model output quality through visual inspection and stakeholder feedback
-- **Operational Integration:** Collaborating with forensic sketch artists to understand real-world requirements
-
-**Additional Project:** Text-to-Face generation system (text descriptions → facial images) as a complementary tool
-
-## Technical Approach
-
-### System Architecture
-
-Given the nature of the task (transforming one image domain to another while preserving structural features), I implemented a **Conditional Generative Adversarial Network (cGAN)** architecture, likely based on **Pix2Pix** or a similar paired image-to-image translation framework.
-
-#### Core Architecture: Conditional GAN
-
-**Generator Network (G):**
-- **Type:** U-Net architecture with skip connections
-- **Input:** Facial composite (grayscale sketch, 256×256)
-- **Output:** Photorealistic RGB image (256×256)
-- **Key Components:**
-  - Encoder: Convolutional layers progressively downsample (extract features)
-  - Bottleneck: Compressed representation of facial structure
-  - Decoder: Transposed convolutions upsample to original resolution
-  - **Skip Connections:** Preserve fine-grained details (eyes, nose, mouth contours)
-
-**Discriminator Network (D):**
-- **Type:** PatchGAN discriminator
-- **Input:** Paired images (composite + real photo) or (composite + generated photo)
-- **Output:** Per-patch probability map (real vs. fake)
-- **Advantage:** Focuses on local texture realism rather than just global structure
-
-#### Loss Function
-
-Combined adversarial and reconstruction loss:
+Explorer les algorithmes de génération de portraits à partir de croquis, en progressant d'un autoencoder de base vers un GAN conditionnel complet (Pix2Pix).
 
 {{< rawhtml >}}
-$$
-\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{GAN}}(G, D) + \lambda \cdot \mathcal{L}_{\text{L1}}(G)
-$$
+<div style="margin: 1.5rem 0;">
+<svg viewBox="0 0 760 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block;margin:auto;font-family:monospace;">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+  <rect x="5"   y="20" width="130" height="50" rx="6" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
+  <rect x="170" y="20" width="130" height="50" rx="6" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="1.5"/>
+  <rect x="335" y="20" width="130" height="50" rx="6" fill="#fff3e0" stroke="#ffcc80" stroke-width="1.5"/>
+  <rect x="500" y="20" width="130" height="50" rx="6" fill="#fce4ec" stroke="#f48fb1" stroke-width="1.5"/>
+  <rect x="665" y="20" width="90"  height="50" rx="6" fill="#ede7f6" stroke="#ce93d8" stroke-width="1.5"/>
+  <path d="M135 45 L168 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M300 45 L333 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M465 45 L498 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M630 45 L663 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="70"  y="42" text-anchor="middle" font-size="11" fill="#1565c0">Dataset CUFS</text>
+  <text x="70"  y="57" text-anchor="middle" font-size="11" fill="#1565c0">+ augmentation</text>
+  <text x="235" y="42" text-anchor="middle" font-size="11" fill="#2e7d32">Autoencoder</text>
+  <text x="235" y="57" text-anchor="middle" font-size="11" fill="#2e7d32">(baseline)</text>
+  <text x="400" y="42" text-anchor="middle" font-size="11" fill="#e65100">U-Net</text>
+  <text x="400" y="57" text-anchor="middle" font-size="11" fill="#e65100">+ skip connections</text>
+  <text x="565" y="42" text-anchor="middle" font-size="11" fill="#880e4f">Pix2Pix</text>
+  <text x="565" y="57" text-anchor="middle" font-size="11" fill="#880e4f">GAN conditionnel</text>
+  <text x="710" y="42" text-anchor="middle" font-size="11" fill="#4a148c">Application</text>
+  <text x="710" y="57" text-anchor="middle" font-size="11" fill="#4a148c">dataset CUHK</text>
+</svg>
+</div>
 {{< /rawhtml >}}
 
+---
 
-Where:
-- **Adversarial Loss:** Forces generated images to be indistinguishable from real photos
-  $$
-  \mathcal{L}_{\text{GAN}} = \mathbb{E}[\log D(x, y)] + \mathbb{E}[\log(1 - D(x, G(x)))]
-  $$
-  - $x$: facial composite (input)
-  - $y$: real photograph (target)
-  - $G(x)$: generated photorealistic image
+## 3- Concepts fondamentaux
 
-- **L1 Reconstruction Loss:** Preserves structural similarity to input composite
-  $$
-  \mathcal{L}_{\text{L1}} = \mathbb{E}[||y - G(x)||_1]
-  $$
+### Réseau de neurones convolutif (CNN)
 
-- **λ:** Weight balancing realism vs. faithfulness (typically λ=100)
+Pour les images, les couches convolutionnelles appliquent un petit filtre qui glisse sur l'image et détecte des motifs locaux (contours, puis formes, puis features de haut niveau). C'est bien plus efficace que de connecter chaque pixel à chaque neurone.
 
-### Training Process
+### Encoder
 
-**Dataset Preparation:**
-- Facial composites paired with corresponding ID photographs
-- Augmentation: Random crops, horizontal flips, color jittering (photos only)
-- Normalization: Pixel values scaled to [-1, 1]
+Un encoder est un CNN qui sous-échantillonne progressivement l'image, la comprimant en un vecteur bottleneck compact. La résolution spatiale diminue tandis que le nombre de features abstraites augmente.
 
-**Training Configuration:**
-- **Optimizer:** Adam (β₁=0.5, β₂=0.999, lr=0.0002)
-- **Batch Size:** Limited by GPU constraints (likely 4-16)
-- **Iterations:** Progressive training over multiple epochs
-- **Hardware Constraint:** Limited compute resources (mentioned in evaluation)
+{{< rawhtml >}}
+<svg viewBox="0 0 700 70" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:1rem auto;font-family:monospace;">
+  <defs>
+    <marker id="ae" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#888"/>
+    </marker>
+  </defs>
+  <rect x="5"   y="10" width="110" height="40" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.2"/>
+  <rect x="145" y="20" width="90"  height="30" rx="4" fill="#bbdefb" stroke="#90caf9" stroke-width="1.2"/>
+  <rect x="265" y="25" width="70"  height="20" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1.2"/>
+  <rect x="365" y="28" width="50"  height="14" rx="4" fill="#64b5f6" stroke="#42a5f5" stroke-width="1.2"/>
+  <rect x="445" y="30" width="35"  height="10" rx="4" fill="#42a5f5" stroke="#1e88e5" stroke-width="1.2"/>
+  <path d="M115 35 L143 35" stroke="#888" stroke-width="1.2" marker-end="url(#ae)"/>
+  <path d="M235 35 L263 35" stroke="#888" stroke-width="1.2" marker-end="url(#ae)"/>
+  <path d="M335 35 L363 35" stroke="#888" stroke-width="1.2" marker-end="url(#ae)"/>
+  <path d="M415 35 L443 35" stroke="#888" stroke-width="1.2" marker-end="url(#ae)"/>
+  <text x="60"  y="58" text-anchor="middle" font-size="9" fill="#555">256×256×3</text>
+  <text x="190" y="58" text-anchor="middle" font-size="9" fill="#555">128×128×64</text>
+  <text x="300" y="58" text-anchor="middle" font-size="9" fill="#555">64×64×128</text>
+  <text x="390" y="58" text-anchor="middle" font-size="9" fill="#555">32×32×256</text>
+  <text x="462" y="58" text-anchor="middle" font-size="9" fill="#555">4×4×512</text>
+  <text x="490" y="35" font-size="9.5" fill="#888">← plus abstrait, moins de détail spatial</text>
+</svg>
+{{< /rawhtml >}}
 
-**Training Strategy:**
-1. Alternating optimization: Train D, then train G
-2. Label smoothing to prevent D from becoming too strong
-3. Iterative hyperparameter tuning (learning rate, λ weight)
+### Decoder
 
-### Alternative/Complementary Approaches Considered
+C'est le miroir de l'encoder. Il prend le bottleneck compressé et le sur-échantillonne progressivement jusqu'à la résolution d'origine via des convolutions transposées.
 
-Given the 2023 timeframe, other potential architectures include:
+### Autoencoder = Encoder + Decoder
 
-1. **CycleGAN:** For unpaired training if matched composite-photo pairs were scarce
-2. **StyleGAN2-based Inversion:** Project composites into latent space, then generate with pretrained face generator
-3. **Diffusion Models (Stable Diffusion):** Condition image generation on composite sketches
-   - ControlNet: Guide diffusion process with structural information
+Pour l'image-to-image, on fournit un croquis en entrée et on entraîne le decoder à produire une photo. Le réseau apprend à traduire les domaines via le bottleneck. Cependant, les détails spatiaux fins (forme exacte des yeux, positions des cheveux) sont perdus à la compression et difficiles à récupérer. C'est la limite fondamentale de l'autoencoder pur.
 
-**Note:** The results shown suggest a Pix2Pix-style paired approach was most successful given data availability.
+![Autoencoder](/images/autoencoder.png)
+
+### U-Net
+
+Le U-Net (Ronneberger et al., 2015) ajoute des raccourcis directs qui copient les feature maps de chaque couche de l'encoder vers la couche correspondante du decoder. Celui-ci peut alors utiliser à la fois le contexte sémantique de haut niveau (depuis le bottleneck) et les détails spatiaux de bas niveau (depuis les skip connections), produisant des sorties plus nettes et plus fidèles.
+
+![U-Net](/images/unet.png)
+
+Les skip connections permettent au decoder de recevoir à la fois la représentation sémantique abstraite du bottleneck et les informations spatiales précises préservées depuis les premières couches de l'encoder.
+
+### GAN (Generative Adversarial Network)
+
+Même avec un U-Net, entraîner avec une loss MAE tend à produire des sorties floues. En effet, la loss MAE fait la moyenne de toutes les sorties plausibles : si le réseau est incertain entre deux textures plausibles, il les moyenne, produisant du flou. Un GAN résout ce problème en ajoutant un second réseau, le discriminateur, entraîné en opposition contre le générateur :
+
+{{< rawhtml >}}
+<svg viewBox="0 0 680 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;display:block;margin:1.2rem auto;font-family:monospace;">
+  <defs>
+    <marker id="gan" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#888"/>
+    </marker>
+    <marker id="ganr" markerWidth="7" markerHeight="7" refX="2" refY="3" orient="auto">
+      <path d="M7,0 L7,6 L0,3 z" fill="#e53935"/>
+    </marker>
+  </defs>
+  <rect x="5"   y="55" width="90" height="40" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.2"/>
+  <text x="50" y="78" text-anchor="middle" font-size="10" fill="#1565c0">Croquis (x)</text>
+  <rect x="135" y="45" width="110" height="60" rx="5" fill="#fff3e0" stroke="#ffcc80" stroke-width="1.5"/>
+  <text x="190" y="79" text-anchor="middle" font-size="11" fill="#e65100" font-weight="bold">Générateur G</text>
+  <rect x="290" y="10" width="100" height="35" rx="4" fill="#fce4ec" stroke="#f48fb1" stroke-width="1.2"/>
+  <text x="340" y="31" text-anchor="middle" font-size="10" fill="#880e4f">Fausse photo G(x)</text>
+  <rect x="290" y="105" width="100" height="35" rx="4" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="1.2"/>
+  <text x="340" y="126" text-anchor="middle" font-size="10" fill="#2e7d32">Vraie photo (y)</text>
+  <rect x="435" y="45" width="120" height="60" rx="5" fill="#ede7f6" stroke="#ce93d8" stroke-width="1.5"/>
+  <text x="495" y="79" text-anchor="middle" font-size="11" fill="#4a148c" font-weight="bold">Discriminateur D</text>
+  <rect x="600" y="55" width="75" height="40" rx="4" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1.2"/>
+  <text x="637" y="72" text-anchor="middle" font-size="10" fill="#424242">Vraie ou</text>
+  <text x="637" y="86" text-anchor="middle" font-size="10" fill="#424242">fausse ?</text>
+  <path d="M95 75  L133 75" stroke="#888" stroke-width="1.2" marker-end="url(#gan)"/>
+  <path d="M245 65 L288 35" stroke="#888" stroke-width="1.2" marker-end="url(#gan)"/>
+  <path d="M390 27 L433 62" stroke="#888" stroke-width="1.2" marker-end="url(#gan)"/>
+  <path d="M390 122 L433 88" stroke="#888" stroke-width="1.2" marker-end="url(#gan)"/>
+  <path d="M555 75 L598 75" stroke="#888" stroke-width="1.2" marker-end="url(#gan)"/>
+  <path d="M650 55 L650 20 L540 20 L540 42" fill="none" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#gan)"/>
+  <path d="M665 54 L665 1 L190 1 L190 42" fill="none" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#gan)"/>
+  <text x="450" y="15" text-anchor="middle" font-size="10" fill="#888">G Loss</text>
+  <text x="600" y="32" text-anchor="middle" font-size="10" fill="#888">D Loss</text>
+</svg>
+{{< /rawhtml >}}
+
+$$\mathcal{L}_{	ext{GAN}} = \mathbb{E}[\log D(x, y)] + \mathbb{E}[\log(1 - D(x, G(x)))]$$
+
+où $x$ est le croquis (condition), $y$ est la vraie photo, $G(x)$ est la photo générée. G est forcé à produire des détails nets et réalistes, car tout flou est immédiatement détecté par D comme fausse image.
+
+### Pix2Pix
+
+Pix2Pix (Isola et al., 2017) combine U-Net + PatchGAN pour la transformation d'image supervisée. Le **discriminateur PatchGAN** classe des patches de 70×70 pixels comme réels ou faux plutôt que l'image entière, forçant ainsi un réalisme de texture locale partout, pas seulement une plausibilité globale.
+
+![Pix2Pix](/images/pix.png)
+
+{{< rawhtml >}}
+$$\mathcal{L}_{	ext{total}} = \mathcal{L}_{	ext{GAN}}(G, D) + \lambda \cdot \mathcal{L}_{	ext{L1}}(G) \qquad$$
+{{< /rawhtml >}}
+
+MAE permet une sortie proche de la vraie photo, tandis que le réseau GAN force le réalisme local.
 
 ---
 
-## Results & Evaluation
+## 4- Exemple d'application sur le dataset CUHK
 
-### Visual Quality Assessment
+### CUHK Face Sketch Database
 
-The image provided shows three transformation examples (facial composite → real photo → predicted photo):
+C'est le benchmark académique de référence pour la synthèse portrait-croquis/photo. Il contient des paires croquis/photo réalisées par des étudiants en art à partir de vraies photographies.
 
-**Observed Strengths:**
-- **Structural Preservation:** Facial geometry (eyes, nose, mouth positioning) accurately maintained
-- **Skin Tone Generation:** Realistic coloration even from grayscale input
-- **Hair Texture:** Plausible hairstyle synthesis matching sketch
-- **Facial Expression:** Neutral expression consistent with ID photography standards
+| Split | Paires |
+|-------|--------|
+| Entraînement | 550 |
+| Test | 56 |
 
-**Limitations:**
-- **Resolution/Definition:** Generated images lack fine detail compared to real photos (noted as "manquent encore de définition")
-- **Sharpness:** Slight blur/smoothing artifacts typical of early GAN training
-- **Background:** Uniform blue background simplifies task but limits generalization
+Le dataset est très petit au regard des standards du deep learning. Une augmentation de données est appliquée (flips et rotations, appliqués symétriquement aux paires croquis/photo pour conserver la cohérence).
 
-### Quantitative Metrics (Inferred)
+### Résultats
 
-While specific numbers aren't provided, typical evaluation metrics for this task would include:
+Trois exemples du jeu de test, portrait-croquis → vraie photo → prédiction du modèle :
 
-- **Structural Similarity (SSIM):** Measures preservation of composite features
-- **Fréchet Inception Distance (FID):** Measures realism compared to real photo distribution
-- **Learned Perceptual Image Patch Similarity (LPIPS):** Perceptual quality assessment
+![Résultats — croquis, réel, prédit](/images/facial-composite-results.png)
 
-### Stakeholder Feedback
+### Métriques d'évaluation : SSIM et PSNR
 
-From evaluation report:
-> "Les résultats obtenus sont particulièrement prometteurs." (Results are particularly promising)
-> "Il a fait preuve de belles initiatives et s'est attaché à trouver des solutions opérationnelles." (Demonstrated strong initiative and operational solutions)
+L'évaluation visuelle est la première approche naturelle pour ce type de tâche, mais elle ne permet pas de comparer des modèles de manière reproductible. Deux métriques sont standard pour la qualité d'image générée.
 
-**Operational Validation:**
-- Consulted with Brigadier Alorent and forensic sketch artists
-- Identified real-world operational needs and integration points
-- Discussed how AI could augment (not replace) human expertise
+**PSNR (Peak Signal-to-Noise Ratio)** mesure le rapport entre la valeur maximale possible d'un pixel et la puissance du bruit de reconstruction, exprimé en décibels :
 
----
+$$\text{PSNR} = 10 \cdot \log_{10}\left(\frac{\text{MAX}^2}{\text{MSE}}\right) \qquad \text{avec} \quad \text{MSE} = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2$$
 
-## Additional Project: Text-to-Face Generation
+où MAX est la valeur maximale d'un pixel (255 pour une image 8 bits), et MSE l'erreur quadratique moyenne entre l'image réelle $y$ et l'image générée $\hat{y}$. Plus le PSNR est élevé, plus la reconstruction est fidèle. Un PSNR > 20 dB est généralement considéré comme acceptable pour la synthèse de visages.
 
-**Objective:** Generate facial images directly from textual descriptions (e.g., "Male, 30s, short dark hair, thin face, no facial hair")
+**SSIM (Structural Similarity Index)** évalue la similarité perceptuelle entre deux images en combinant trois composantes : luminance, contraste et structure :
 
-**Approach:** Likely involved:
-- **Text Encoder:** Transform descriptions into embedding vectors (CLIP, BERT)
-- **Conditional GAN/Diffusion Model:** Generate faces conditioned on text embeddings
-- **Attribute Control:** Map textual attributes to facial features
+$$\text{SSIM}(y, \hat{y}) = \frac{(2\mu_y\mu_{\hat{y}} + c_1)(2\sigma_{y\hat{y}} + c_2)}{(\mu_y^2 + \mu_{\hat{y}}^2 + c_1)(\sigma_y^2 + \sigma_{\hat{y}}^2 + c_2)}$$
 
-**Status:** Model architecture completed, training partially complete due to resource constraints and debugging requirements
+où $\mu$ désigne la moyenne locale, $\sigma^2$ la variance locale, $\sigma_{y\hat{y}}$ la covariance, et $c_1, c_2$ des constantes de stabilisation. SSIM prend ses valeurs dans $[-1, 1]$, une valeur de 1 indiquant une similarité parfaite. Contrairement au PSNR, il est conçu pour mieux refléter la perception humaine de la qualité d'image.
 
-**Operational Use Case:** Enable investigators to generate suspect images from witness statements without requiring a sketch artist
+Dans l'exemple ci-dessus, SSIM ≈ 0,64 et PSNR ≈ 17,3 dB, limité par les capacités de mon ordinateur. Pour Pix2Pix appliqué au même dataset, les valeurs de référence rapportées sont SSIM ≈ 0,70 et PSNR ≈ 18,4 dB en configuration baseline, améliorées à SSIM ≈ 0,81 et PSNR ≈ 23,0 dB avec un prétraitement d'inversion gamma des croquis. Ces valeurs sont cohérentes avec les miennes, les résultats dépendant de la durée d'entraînement, de l'augmentation de données/quantité de données initiales et du matériel disponible.
 
 ---
-
-## Challenges & Constraints
-
-### 1. **Limited Compute Resources**
-- **Impact:** Prevented full model convergence and extensive hyperparameter search
-- **Mitigation:** Prioritized efficient architectures (smaller batch sizes, progressive training)
-- **Evaluation Note:** "Limité par les capacités de calcul mises à sa disposition, il n'a pu entraîner suffisamment ses modèles"
-
-### 2. **Data Scarcity**
-- Paired composite-photo datasets are limited due to privacy and operational constraints
-- Required careful data augmentation and potentially synthetic data generation
-
-### 3. **Quality-Fidelity Trade-off**
-- Balancing photorealism (for public recognition) with structural accuracy (for legal validity)
-- Too much "creativity" by the generator could produce faces that don't match the original description
-
-### 4. **Ethical & Legal Considerations**
-- **Bias:** Ensuring model doesn't introduce demographic biases
-- **Accountability:** Generated images must be clearly marked as AI-reconstructions
-- **Privacy:** Handling sensitive biometric data under French/EU regulations
-
----
-
-## Technical Skills Demonstrated
-
-**Deep Learning Frameworks:**
-- **PyTorch** (most likely) or TensorFlow for GAN implementation
-- Model architecture design (U-Net, PatchGAN discriminator)
-- Custom loss function implementation (adversarial + L1)
-
-**Computer Vision:**
-- Image preprocessing and augmentation
-- Face detection and alignment
-- Perceptual quality assessment
-- Domain-specific evaluation (forensic art consultation)
-
-**Generative Models:**
-- Conditional GAN training and stabilization
-- Adversarial training dynamics (generator/discriminator balance)
-- Latent space manipulation
-- Image-to-image translation
-
-**Research & Development:**
-- Literature review of state-of-the-art methods
-- Experimental design and hyperparameter tuning
-- Stakeholder engagement and requirement gathering
-- Iterative prototyping under resource constraints
-
----
-
-## Impact & Future Directions
-
-### Immediate Impact
-
-✅ **Proof of Concept Validated:** Demonstrated AI can transform composites into usable photorealistic images  
-✅ **Operational Insights:** Identified integration points in criminal investigation workflows  
-✅ **Foundation for Further Development:** Established baseline architecture and training pipeline
-
-### Recommended Next Steps
-
-1. **Extended Training:** Leverage cloud compute (AWS, GCP) for longer training runs
-2. **Dataset Expansion:** Collaborate with multiple agencies to build larger paired dataset
-3. **Multi-Modal Fusion:** Combine text descriptions + sketches for improved accuracy
-4. **Interactive Refinement:** Allow investigators to iteratively adjust generated faces
-5. **Facial Recognition Integration:** Test generated images against FR databases
-
-### Broader Applications
-
-- **Cold Case Investigation:** Modernize decades-old composite sketches
-- **Missing Persons:** Age progression combined with composite enhancement
-- **Training Tool:** Help forensic artists visualize witness descriptions
-- **International Cooperation:** Standardize composite formats across agencies
-
----
-
-## Ethical Considerations
-
-This project operated within strict ethical guidelines:
-
-- **Transparency:** All generated images clearly marked as AI-reconstructions (not actual photographs)
-- **Human Oversight:** System designed to augment, not replace, forensic artist expertise
-- **Bias Mitigation:** Awareness of potential demographic biases in training data
-- **Data Protection:** Compliance with French data protection laws (CNIL) and GDPR
-- **Legal Admissibility:** Consultation with legal teams on evidentiary standards
-
----
-
-## Technical Deep Dive: How GANs Work
-
-### Generative Adversarial Networks (GANs)
-
-GANs consist of two neural networks in competition:
-
-**1. Generator (G):** Creates fake data to fool the discriminator
-- Learns mapping from input space (sketches) to target space (photos)
-- Improves by trying to make fakes indistinguishable from real
-
-**2. Discriminator (D):** Distinguishes real data from generated fakes
-- Acts as learned loss function
-- Forces generator to produce increasingly realistic outputs
-
-### Training Dynamics
-```python
-# Simplified training loop
-for epoch in epochs:
-    for batch in dataloader:
-        # Train Discriminator
-        real_output = D(real_image, condition)
-        fake_image = G(condition)
-        fake_output = D(fake_image, condition)
-        
-        d_loss = -log(real_output) - log(1 - fake_output)
-        d_loss.backward()
-        optimizer_D.step()
-        
-        # Train Generator
-        fake_image = G(condition)
-        fake_output = D(fake_image, condition)
-        
-        g_loss_adversarial = -log(fake_output)
-        g_loss_L1 = L1(fake_image, real_image)
-        g_loss = g_loss_adversarial + λ * g_loss_L1
-        g_loss.backward()
-        optimizer_G.step()
-```
-
-### Why U-Net for Generator?
-
-U-Net architecture is ideal for this task because:
-- **Skip Connections:** Preserve low-level details (facial landmarks) from input sketch
-- **Hierarchical Features:** Learn both global structure and local textures
-- **Proven Effectiveness:** Standard choice for medical imaging and image translation
-
----
-
-**Supervisor Evaluation Excerpt:**
-> "Monsieur Elouan Pulveric a témoigné, durant son stage, de belles capacités à appréhender un sujet complexe et à en faire un outil exploitable. Il a fait preuve de belles initiatives et s'est attaché à trouver des solutions opérationnelles."
-> 
-> (Mr. Elouan Pulveric demonstrated, during his internship, strong capabilities in tackling a complex subject and creating a usable tool. He showed excellent initiative and focused on finding operational solutions.)
-
----
-
-*This project showcases the intersection of cutting-edge generative AI with critical public safety applications, demonstrating both technical proficiency in deep learning and awareness of ethical considerations in law enforcement AI.*
+`Python` · `TensorFlow / Keras` · `NumPy` · `Matplotlib` · `PIL`

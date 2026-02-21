@@ -1,9 +1,9 @@
 ---
-title: "Génération de visages photoréalistes à partir de portraits-robots"
+title: "Génération de photos à partir de portraits-robots"
 date: 2023-08-31
 draft: false
 categories: ["Computer Vision", "Generative AI", "Deep Learning"]
-summary: "Sketch-to-face, concepts & architectures. De l'autoencoder au U-Net jusqu'au Pix2Pix (GAN conditionnel)."
+summary: "Concepts et architectures de modèles sketch-to-face, de l'autoencoder au U-Net jusqu'au Pix2Pix (GAN conditionnel)."
 cover:
   alt: "Portrait-robot vers photo réaliste"
   relative: false
@@ -21,7 +21,7 @@ math: true
 
 > **Note :** Cette page est une note personnelle des concepts et architectures des modèles image-to-image explorés pendant mon passage à la Direction Générale de la Gendarmerie Nationale, illustrée par une petite application sur le dataset public CUHK de croquis de visages.
 
-**Sketch-to-face — Concepts & Architectures**
+**Génération de photos à partir de portraits-robots**
 
 ![dggn-sketch-to-photo.png](/images/face.png)
 

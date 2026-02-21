@@ -24,7 +24,7 @@ math: true
 
 **Étude de recherche à grande échelle analysant les mobilités de 2,4M+ utilisateurs californiens pour orienter la politique de réduction des émissions de gaz à effet de serre de l'État à l'horizon 2030 — machine learning, analyse géospatiale big data et science des réseaux.**
 
-![carb-overview.png](/images/carb-overview.png)
+![carb-overview.png](/images/img1.png)
 
 ---
 

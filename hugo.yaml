@@ -62,7 +62,7 @@ params:
 
   # ── Style ────────────────────────────────────────────────────────────────
   defaultTheme: light
-  disableThemeToggle: false
+  disableThemeToggle: true
   ShowReadingTime: false
   ShowShareButtons: false
   ShowPostNavLinks: false

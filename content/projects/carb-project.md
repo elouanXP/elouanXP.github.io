@@ -5,7 +5,7 @@ draft: false
 categories: ["Data Science", "Transportation", "Public Policy"]
 summary: "A comprehensive research study analyzing 2.4M+ users' mobility patterns to inform California's 2030 GHG reduction policy - using machine learning, geospatial big data analysis and network science."
 cover:
-  image: "/images/bike.png"
+  image: "/images/Picture5.png"
   alt: "COVID-19 and Mobility Analysis"
   relative: false
 showToc: true

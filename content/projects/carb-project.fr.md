@@ -5,7 +5,7 @@ draft: false
 categories: ["Data Science", "Transportation", "Public Policy"]
 summary: "Étude analysant les déplacements de +2,4M d'utilisateurs pour orienter la politique de réduction des GES de la Californie à horizon 2030 - machine learning, analyse géospatiale big data et data science."
 cover:
-  image: "/images/bike.png"
+  image: "/images/Picture5.png"
   alt: "COVID-19 et analyse de mobilité"
   relative: false
 showToc: true

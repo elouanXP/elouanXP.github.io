@@ -5,7 +5,7 @@ draft: false
 categories: ["Projects"]
 summary: "An end-to-end predictive maintenance system for aircraft turbofan engines. RUL prediction on NASA CMAPSS dataset using Random Forest, XGBoost, sklearn Pipelines & MLflow."
 cover:
-  image: ""
+  image: "/images/turbofan.png"
   alt: "Turbofan RUL Prediction"
   relative: false
 showToc: true

@@ -5,7 +5,7 @@ draft: false
 categories: ["Projects"]
 summary: "Système de maintenance prédictive de bout-en-bout pour moteurs d'avions. Prédiction du RUL sur le dataset NASA CMAPSS avec Random Forest, XGBoost, sklearn Pipelines & MLflow."
 cover:
-  image: ""
+  image: "/images/turbofan.png"
   alt: "Turbofan RUL Prediction"
   relative: false
 showToc: true

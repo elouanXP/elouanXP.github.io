@@ -5,7 +5,7 @@ draft: false
 categories: ["Projects"]
 summary: "Intelligent electric vehicle charging optimization using LSTM emission forecasting and convex optimization to minimize CO2 emissions while ensuring user mobility needs."
 cover:
-  image: ""
+  image: "/images/ev.png"
   alt: "EV Smart Charge Scheduling"
   relative: false
 showToc: true

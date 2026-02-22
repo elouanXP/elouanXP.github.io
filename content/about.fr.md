@@ -16,7 +16,7 @@ ShowBreadCrumbs: false
 
 Je suis diplômé d’un double cursus d’ingénieur aux <a href="https://artsetmetiers.fr" target="_blank">Arts et Métiers ParisTech</a> ainsi que d’un Master of Science en Systems Engineering & Data Science à <a href="https://ce.berkeley.edu/programs/sys" target="_blank">UC Berkeley</a>.
 
-À Berkeley, j’ai travaillé comme assistant chercheur au <a href="https://humnetlab.berkeley.edu/" target="_blank">HumNet Lab</a> pour le <a href="https://ww2.arb.ca.gov/data-science-framework-measure-vehicle-miles-traveled-mode-and-purpose" target="_blank">California Air Resources Board</a>, où j’ai étudié l’impact du COVID-19 sur la mobilité en Californie. J’y ai traité des données mobiles massives afin d’éclairer les politiques publiques de réduction des émissions à l'échelle de l'État — une expérience qui a renforcé mon intérêt pour l’aide à la décision fondée sur les données et à fort impact sociétal.
+À Berkeley, j’ai travaillé comme assistant chercheur au <a href="https://humnetlab.berkeley.edu/" target="_blank">HumNet Lab</a> pour le <a href="https://ww2.arb.ca.gov/data-science-framework-measure-vehicle-miles-traveled-mode-and-purpose" target="_blank">California Air Resources Board</a>, où j’ai étudié l’impact du COVID-19 sur la mobilité en Californie. J’y ai traité des données mobiles massives afin d’éclairer les politiques publiques de réduction des émissions à l'échelle de l'État - une expérience qui a renforcé mon intérêt pour l’aide à la décision fondée sur les données et à fort impact sociétal.
 
 </div>
 

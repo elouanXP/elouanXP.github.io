@@ -5,6 +5,7 @@ draft: false
 categories: ["Computer Vision", "Generative AI", "Deep Learning"]
 summary: "Concepts et architectures de modèles sketch-to-face, de l'autoencoder au U-Net jusqu'au Pix2Pix (GAN conditionnel)."
 cover:
+  image: "/images/gn.png"
   alt: "Portrait-robot vers photo réaliste"
   relative: false
 showToc: true

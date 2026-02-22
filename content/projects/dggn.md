@@ -5,6 +5,7 @@ draft: false
 categories: ["Computer Vision", "Generative AI", "Deep Learning"]
 summary: " Sketch-to-Face Translation, concepts & architectures. Iterating from autoencoders to U-Net to Pix2Pix (conditional GAN)."
 cover:
+  image: "/images/gn.png"
   alt: "Facial composite to realistic photo"
   relative: false
 showToc: true

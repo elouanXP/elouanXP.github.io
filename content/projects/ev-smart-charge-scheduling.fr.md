@@ -5,7 +5,7 @@ draft: false
 categories: ["Projects"]
 summary: "Optimisation de la recharge de véhicules électriques à l'aide d'un réseau LSTM de prédiction des émissions et optimisation convexe de l'empreinte CO2, tout en garantissant les besoins de mobilité."
 cover:
-  image: ""
+  image: "/images/ev.png"
   alt: "EV Smart Charge Scheduling"
   relative: false
 showToc: true

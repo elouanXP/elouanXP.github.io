@@ -16,7 +16,7 @@ ShowBreadCrumbs: false
 
 I hold a dual engineering degree from <a href="https://artsetmetiers.fr/en" target="_blank">Arts et Métiers ParisTech</a> in Mechanical Engineering and a Master of Science from <a href="https://ce.berkeley.edu/programs/sys" target="_blank">UC Berkeley in Systems Engineering & Data Science</a>.
 
-At Berkeley, I worked as a Graduate Student Researcher at the <a href="https://humnetlab.berkeley.edu/" target="_blank">HumNet Lab</a> for the <a href="https://ww2.arb.ca.gov/data-science-framework-measure-vehicle-miles-traveled-mode-and-purpose" target="_blank">California Air Resources Board</a>, analyzing the impact of COVID-19 lockdowns on mobility patterns. I processed billions of mobile data to inform state-level emission reduction policies — an experience that strengthened my interest in data-driven decision-making with tangible societal impact.
+At Berkeley, I worked as a Graduate Student Researcher at the <a href="https://humnetlab.berkeley.edu/" target="_blank">HumNet Lab</a> for the <a href="https://ww2.arb.ca.gov/data-science-framework-measure-vehicle-miles-traveled-mode-and-purpose" target="_blank">California Air Resources Board</a>, analyzing the impact of COVID-19 lockdowns on mobility patterns. I processed billions of mobile data to inform state-level emission reduction policies - an experience that strengthened my interest in data-driven decision-making with tangible societal impact.
 
 </div>
 

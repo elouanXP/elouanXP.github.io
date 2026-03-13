@@ -30,7 +30,7 @@ Back in France, I joined the French Interior Ministry (<a href="https://www.link
 
 After graduating, I underwent selection and training within the <a href="https://www.sengager.fr/tous-nos-regiments/1er-regiment-de-parachutistes-dinfanterie-de-marine" target="_blank">1st RPIMa</a> - a French special forces regiment specialized in counter-terrorism and intelligence operations - as a paratrooper. This experience taught me resilience, effective teamwork, reliability under pressure, and sustained focus in high-stakes environments.
 
-I am now looking to apply my skills in data science/analysis, machine learning, and artificial intelligence to solve meaningful problems and contribute to impactful, real-world projects.
+I am now looking to apply my skills in systems engineering, data analysis and machine learning to solve meaningful problems and contribute to impactful, real-world projects.
 
 📧 [elouan.pulveric@gmail.com](mailto:elouan.pulveric@gmail.com)  
 💼 [linkedin.com/in/epx](https://linkedin.com/in/epx)  

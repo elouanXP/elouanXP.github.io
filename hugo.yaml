@@ -34,7 +34,7 @@ params:
     enabled: true
     title: "👋 Welcome to my website"
     subtitle: |
-      This blog showcases my projects and experiments in data science and AI.
+      This blog showcases my projects in systems engineering, data science and AI.
     imageUrl: "images/profile.png"
     imageWidth: 120
     imageHeight: 120
@@ -136,7 +136,7 @@ languages:
         enabled: true
         title: "👋 Bienvenue sur mon site"
         subtitle: |
-          Je poste ici mes projets et travaux en data science et intelligence artificielle.
+          Je poste ici mes projets en ingénierie des systèmes, data science et intelligence artificielle.
 
         imageUrl: "images/profile.png"
         imageWidth: 120

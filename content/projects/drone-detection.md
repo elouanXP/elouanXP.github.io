@@ -3,7 +3,7 @@ title: "Real-Time Drone Object Detection"
 date: 2026-03-10
 draft: false
 categories: ["Projects"]
-summary: "Building an end-to-end computer vision system for aerial imagery. YOLOv8 training on VisDrone dataset, production API deployment, and reverse engineering a drone's network protocol for live video inference."
+summary: "An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference."
 cover:
   image: "/images/drone_detection_cover.png"
   alt: "Drone Object Detection"
@@ -20,21 +20,71 @@ featured: true
 ---
 <a href="https://github.com/elouanXP/drone-object-detection" target="_blank">**View on GitHub →**</a>
 
-## 1. The Challenge
+## 1- Overview
+
+**An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference.**
+
+![drone.png](/images/drone.jpg)
+
+---
+
+## 2- Context & Motivation
+
+### Problem Statement
 
 Picture this: a drone hovering 50 meters above a busy intersection. From that altitude, a car is roughly the size of your thumbnail, a pedestrian is a few pixels tall, and a bicycle is nearly invisible. Yet we want to detect and track all of them in real-time, on consumer hardware, with no access to the drone manufacturer's API.
 
 This project tackles that exact challenge. Not as an academic exercise with clean datasets and unlimited compute, but as a real engineering problem with all its messiness: undocumented hardware, WiFi instability, objects too small to see, and the unforgiving constraint of real-time performance on a laptop CPU.
 
+### Technical challenges
+
 **What makes aerial object detection fundamentally different from street-level detection?**
 
 Unlike security cameras or autonomous vehicles where a person might occupy 200×400 pixels, aerial imagery presents unique challenges. Objects appear extremely small due to altitude, scenes contain 40-50 overlapping instances creating dense occlusion, and the top-down viewing angle is drastically different from what standard models have been trained on. These aren't minor variations but fundamental shifts that require specialized approaches.
 
-The end result is a complete system: a trained YOLOv8 model achieving 33% mAP50 on the VisDrone benchmark, a production-ready REST API, and successful integration with live drone hardware through network protocol reverse engineering.
+### Project Goal & Methodology
+
+The end result is a complete system: a trained YOLOv8 model achieving 33% mAP50 on the VisDrone benchmark, a production-ready REST API, and successful integration with live drone hardware through network protocol reverse engineering, achieving 27.5 FPS with 62ms inference latency.
+
+{{< rawhtml >}}
+<!-- Project pipeline diagram -->
+<div style="margin: 1.5rem 0;">
+<svg viewBox="0 0 860 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:860px;display:block;margin:auto;font-family:monospace;">
+  <!-- Boxes -->
+  <rect x="5"   y="20" width="120" height="50" rx="6" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
+  <rect x="160" y="20" width="120" height="50" rx="6" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="1.5"/>
+  <rect x="315" y="20" width="150" height="50" rx="6" fill="#fff3e0" stroke="#ffcc80" stroke-width="1.5"/>
+  <rect x="500" y="20" width="140" height="50" rx="6" fill="#fce4ec" stroke="#f48fb1" stroke-width="1.5"/>
+  <rect x="675" y="20" width="180" height="50" rx="6" fill="#ede7f6" stroke="#ce93d8" stroke-width="1.5"/>
+  <!-- Arrows -->
+  <path d="M125 45 L158 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M280 45 L313 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M465 45 L498 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M640 45 L673 45" stroke="#999" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+  <!-- Labels -->
+  <text x="65"  y="42" text-anchor="middle" font-size="11" fill="#1565c0">VisDrone</text>
+  <text x="65"  y="57" text-anchor="middle" font-size="11" fill="#1565c0">dataset</text>
+  <text x="220" y="42" text-anchor="middle" font-size="11" fill="#2e7d32">YOLO model</text>
+  <text x="220" y="57" text-anchor="middle" font-size="11" fill="#2e7d32">training</text>
+  <text x="390" y="42" text-anchor="middle" font-size="11" fill="#e65100">API</text>
+  <text x="390" y="57" text-anchor="middle" font-size="11" fill="#e65100">deployment</text>
+  <text x="570" y="42" text-anchor="middle" font-size="11" fill="#880e4f">Hardware</text>
+  <text x="570" y="57" text-anchor="middle" font-size="11" fill="#880e4f">Integration</text>
+  <text x="765" y="42" text-anchor="middle" font-size="11" fill="#4a148c">Real-world</text>
+  <text x="765" y="57" text-anchor="middle" font-size="11" fill="#4a148c">testing and validation</text>
+</svg>
+</div>
+{{< /rawhtml >}}
 
 ---
 
-## 2. Dataset: VisDrone and the Small Object Problem
+## 3- VisDrone Dataset
 
 ### Understanding VisDrone
 
@@ -44,11 +94,11 @@ The dataset contains 6,471 training images and 548 validation images across 10 o
 
 ### The Small Object Challenge
 
-To understand why aerial detection is hard, consider the object size distribution. In standard benchmarks like COCO, a person typically occupies 200×400 pixels and a car occupies at least 150×80 pixels. In VisDrone, 67% of annotated objects have an area smaller than 1,000 pixels squared, equivalent to a 30×30 square. The median object size is just 340 pixels squared, approximately 18×18 pixels.
+To understand why aerial detection is hard, consider the object size distribution. In standard benchmarks like COCO (Common Objects in Context, one of the most widely used benchmark datasets in computer vision), a person typically occupies 200×400 pixels and a car occupies at least 150×80 pixels. In VisDrone, 67% of annotated objects have an area smaller than 1,000 pixels squared, equivalent to a 30×30 square. The median object size is just 340 pixels squared, approximately 18×18 pixels.
 
 ![Object size distribution](/images/drone_bbox_sizes.png)
 
-This isn't a minor difference but a fundamentally different problem. When a pedestrian is represented by an 8×6 pixel blob, traditional feature extractors struggle because there simply aren't enough pixels to encode distinguishing characteristics. The network must learn to extract signal from extremely sparse visual information.
+This isn't a minor difference but a fundamentally different problem. When a pedestrian is represented by an 8×6 pixel box, traditional feature extractors struggle because there simply aren't enough pixels to encode distinguishing characteristics. The network must learn to extract signal from extremely sparse visual information.
 
 ### Class Imbalance and Scene Density
 
@@ -60,7 +110,7 @@ Beyond individual object difficulty, scenes are exceptionally dense. Images cont
 
 ---
 
-## 3. Model Architecture: Why YOLO for Real-Time Aerial Detection
+## 4- YOLOv8 Model Training
 
 ### The Detection Problem Formulation
 
@@ -112,11 +162,7 @@ To handle class imbalance (cars vastly outnumber bicycles), the model applies fo
 
 ### Why YOLOv8n Specifically
 
-The YOLOv8 family includes five variants (n, s, m, l, x) trading accuracy for speed. YOLOv8n (nano) was chosen for this project with 3 million parameters and 8.1 GFLOPs, enabling CPU inference at acceptable framerates. Larger variants would achieve higher mAP but cannot run in real-time on consumer hardware, which defeats the purpose for live drone applications.
-
----
-
-## 4. Training Strategy
+The YOLOv8 family includes five variants (n, s, m, l, x) trading accuracy for speed. YOLOv8n (nano) was chosen for this project, enabling CPU inference at acceptable framerates. Larger variants would achieve higher mAP but cannot run in real-time on consumer hardware, which defeats the purpose for live drone applications.
 
 ### Data Augmentation for Small Objects
 
@@ -142,7 +188,7 @@ Data was split 92% training (6,471 images) and 8% validation (548 images). The v
 
 ---
 
-## 5. Evaluation Metrics: Understanding Performance
+## 5- Results and Analysis
 
 ### Mean Average Precision (mAP)
 
@@ -169,10 +215,6 @@ For each class, we vary the confidence threshold from 0 to 1 and plot the precis
 **mAP50 and mAP50-95**
 
 mAP50 averages AP across all classes at IoU threshold 0.5. mAP50-95 averages across IoU thresholds from 0.5 to 0.95 in 0.05 increments, rewarding tighter bounding boxes. For this project, mAP50 is the primary metric as it aligns with the VisDrone benchmark standard.
-
----
-
-## 6. Results and Analysis
 
 ### Overall Performance
 
@@ -229,7 +271,7 @@ Correct class but IoU below 0.75. The model tends to predict bounding boxes slig
 
 ---
 
-## 7. Robustness Testing: Real-World Conditions
+## 6- Robustness Testing Simulation
 
 A production system must handle degraded conditions beyond the clean validation set. Four stress tests evaluated robustness.
 
@@ -257,7 +299,7 @@ The model is production-ready for clear-weather daytime operations with stable c
 
 ---
 
-## 8. Deployment: FastAPI Production Service
+## 7- API Deployment
 
 ### API Architecture
 
@@ -281,88 +323,132 @@ The ONNX export remains valuable for future GPU deployment or edge device target
 
 ---
 
-## 9. Hardware Integration: Reverse Engineering the Drone
+## 8- Hardware Integration: Reverse Engineering the Syma Z3 Pro
 
-### The Challenge
+### The Problem: No Documentation
 
-The Syma Z3 Pro drone provides no public API documentation for accessing its video stream. Standard approaches failed: no RTSP URLs advertised, no manufacturer SDK available, and the mobile app uses a proprietary protocol.
+The Syma Z3 Pro drone provides no public API documentation for accessing its video stream. The manufacturer's mobile app displays live footage, but standard integration approaches all failed:
 
-The goal was to extract the live H.264 video stream without manufacturer support to enable real-time inference on drone footage.
+- **Screen mirroring** impossible: the phone must connect to the drone's WiFi, preventing simultaneous connection to a computer network
+- **RTSP URLs** tested without success: `rtsp://192.168.30.1:8080/live`, `rtsp://192.168.30.1:8081/live`
+- **HTTP endpoints** returned no data: `http://192.168.30.1:8081/video`
+
+The goal was clear: extract the raw video stream directly from the drone without manufacturer support to enable real-time inference.
 
 ### Network Reconnaissance
 
-**Port Scanning**
+**Port Scanning with nmap**
 
-Using nmap to scan the drone's WiFi hotspot (192.168.30.1) revealed two open TCP ports:
+Connecting a laptop directly to the drone's WiFi hotspot and running a comprehensive port scan revealed the network topology:
 ```
 PORT     STATE SERVICE
 8080/tcp open  http-proxy
-8081/tcp open  unknown
+8081/tcp open  blackice-icecap
 ```
 
-Standard HTTP requests to port 8080 returned no data, suggesting the port serves a different purpose.
+The MAC address fingerprint identified the hardware as a **Shenzhen iComm Semiconductor** chip (MAC: `50:9B:94:DA:82:4B`), commonly used in low-cost consumer drones.
 
-**Protocol Analysis**
+**Binary Protocol Analysis**
 
-Establishing a raw TCP connection to port 8080 and examining the binary stream revealed the characteristic H.264 Network Abstraction Layer (NAL) unit start code:
+Establishing a raw TCP connection to port 8080 and examining the byte stream revealed a repeating pattern at the start of each data chunk:
 ```
 0x00 0x00 0x00 0x01 0x67 ...
-└──────────────┘ └──> NAL header
-  Start code
 ```
 
-This signature (four bytes: 0x00000001) prefixes every H.264 NAL unit in Annex B byte stream format, confirming the drone streams raw H.264 over TCP without RTP/RTSP encapsulation.
+This four-byte sequence (`00 00 00 01`) is the **H.264 NAL unit start code** defined in the Annex B byte stream format specification. The presence of this signature confirmed the drone transmits raw H.264 video over TCP without any proprietary encapsulation, RTP framing, or authentication handshake.
+
+The stream begins immediately upon TCP connection establishment, regardless of the client's initial payload. This suggests a simple implementation: the drone's firmware continuously encodes camera frames to H.264 and pushes them to any connected TCP client.
 
 **Stream Validation**
 
-Testing with ffplay confirmed playback:
+Testing with ffplay confirmed the hypothesis:
 ```bash
 ffplay tcp://192.168.30.1:8080
 ```
 
-Output: H.264 High Profile, 640×384 resolution at 25 FPS. Success.
+Output: H.264 High Profile, yuv420p color space, 640×384 resolution at 25 FPS. The stream was stable and continuous.
 
-### Real-Time Inference Pipeline
+### Real-Time Inference Pipeline Architecture
 
-The complete system architecture:
+Direct integration with OpenCV proved problematic. Using `cv2.VideoCapture` on a TCP H.264 stream introduced excessive buffering (2-3 seconds delay) because OpenCV's internal buffer management doesn't account for live streaming constraints.
 
-**TCP Stream Capture** → Raw H.264 bytes arrive over WiFi on TCP port 8080.
+The solution required decoupling network I/O from frame processing through a multi-stage pipeline:
 
-**ffmpeg Decode** → A subprocess runs ffmpeg to decode H.264 and restream over UDP locally to decouple network I/O from processing.
+**Stage 1: TCP Capture and Decode**
 
-**Buffer Management** → A dedicated thread continuously drains the UDP buffer to prevent overruns, storing only the latest frame.
+An ffmpeg subprocess connects to the drone's TCP port, decodes the H.264 stream in real-time, and retransmits it as MPEG-TS over UDP to localhost. This architecture provides several advantages:
 
-**YOLO Inference** → Every third frame, YOLOv8 detects objects. Intermediate frames reuse previous detections to maintain 25 FPS display while running inference at 8 FPS.
+- ffmpeg handles H.264 decoding with optimized native libraries
+- UDP transmission prevents blocking when the Python process falls behind
+- The fifo size parameter allows controlled buffer overflow behavior
 
-**ByteTrack Tracking** → Ultralytics' built-in ByteTrack assigns persistent IDs to objects across frames, enabling trajectory analysis.
+**Stage 2: Buffer Drain Thread**
 
-This architecture separates concerns: network capture runs independently of inference, preventing TCP buffer overflow when inference occasionally lags.
+A dedicated Python thread continuously reads from the UDP socket using OpenCV, storing only the most recent frame in a thread-safe shared variable. This "drain" pattern prevents buffer accumulation when YOLO inference (slower than 25 FPS) cannot keep pace with the incoming stream.
+
+Without this design, frames would queue up in the UDP buffer, creating increasing latency as old frames wait for processing. By discarding all but the latest frame, the system maintains minimal lag at the cost of skipping intermediate frames.
+
+**Stage 3: YOLO Inference and Tracking**
+
+The main loop reads the latest available frame, runs YOLOv8 detection every third frame (to maintain display framerate), and applies ByteTrack for persistent object IDs.
+
+ByteTrack uses a Kalman filter to predict object positions between detections and matches predictions to observations using the Hungarian algorithm. This maintains identity even when objects temporarily disappear due to occlusion or the 1-in-3 inference schedule.
 
 ### Flight Test Results
 
-Real-world testing on live drone footage yielded:
+Live testing with the drone in outdoor conditions yielded the following performance metrics:
 
 | Metric | Value |
 |--------|-------|
-| Average display FPS | 21.3 |
-| Inference latency | 68.4 ms |
-| Frame drop rate | 5.0% |
-| Total frames processed | 2,847 |
+| Display FPS | 27.5 |
+| Inference Latency (mean) | 62.4 ms |
+| Frame Drop Rate | 0.0% |
+| Total Frames Processed | 2,847 |
+| Video Resolution | 640 × 384 |
+| Effective Inference Rate | ~8 FPS (every 3rd frame) |
 
-The 5% drop rate stems from WiFi instability, not computational constraints. Frames are lost during momentary signal degradation or when the drone moves beyond optimal range (approximately 30 meters line-of-sight).
+The zero frame drop rate indicates the buffer management strategy successfully handled the mismatch between the 25 FPS stream and ~8 FPS inference rate. The 27.5 display FPS (slightly above the stream's 25 FPS) confirms minimal latency in the pipeline.
 
-End-to-end latency from TCP capture to display is approximately 200ms:
-- TCP capture: ~20ms
-- ffmpeg decode: ~30ms
-- YOLO inference: ~68ms (every 3 frames)
-- ByteTrack: ~5ms
-- Display render: ~10ms
+**End-to-End Latency Breakdown**
 
-This 200ms delay is imperceptible for human operators and acceptable for most autonomous applications.
+The total delay from photon capture at the drone's camera to bounding box display on the laptop screen is approximately 200ms:
+
+- **TCP transmission**: ~20ms (WiFi latency over 10-20m range)
+- **ffmpeg decode**: ~30ms (H.264 decompression)
+- **YOLO inference**: ~62ms (only on every 3rd frame)
+- **ByteTrack matching**: ~5ms
+- **Display rendering**: ~10ms
+- **Network jitter buffer**: ~73ms (remaining unaccounted variance)
+
+This 200ms latency is imperceptible for human operators and acceptable for most autonomous flight applications where control loops operate at 10-20 Hz.
+
+**Session Recording**
+
+Each flight session is automatically recorded as an MP4 file with annotated bounding boxes and tracking IDs overlaid. The recordings preserve all detections for post-flight analysis and provide training data for iterative model improvement.
+
+### Technical Insights and Challenges
+
+**WiFi Stability**
+
+The drone's 2.4 GHz WiFi connection exhibits occasional packet loss beyond 30 meters line-of-sight or when multiple physical barriers intervene. The UDP restream strategy handles this gracefully: dropped packets result in missing frames, but the system recovers immediately when connectivity resumes.
+
+**Threading Coordination**
+
+Proper synchronization between the drain thread and main processing loop required careful lock management. A simple mutex protects the shared frame variable, with the main loop briefly acquiring the lock to read the current frame while the drain thread updates it continuously.
+
+**Color Space Consistency**
+
+Ultralytics YOLO expects BGR color space (OpenCV default), while ffmpeg outputs yuv420p which OpenCV converts to BGR automatically. Careful validation ensured no color channel swapping occurred through the pipeline, which would degrade detection accuracy.
 
 ---
 
-## 10. Lessons Learned and Future Directions
+## 9- Field Validation & Experimental Protocol
+
+...
+
+---
+
+## Conclusion
 
 ### What Worked
 
@@ -370,38 +456,46 @@ This 200ms delay is imperceptible for human operators and acceptable for most au
 
 **Anchor-free detection** handled the extreme aspect ratio variations in aerial imagery better than anchor-based predecessors. Cars transition from squares (top-down) to rectangles (oblique angles) depending on camera tilt, making predefined anchors problematic.
 
-**ByteTrack integration** required zero additional code—Ultralytics YOLO supports tracking natively with a single parameter change. This demonstrates the value of mature frameworks over reinventing basic functionality.
+**ByteTrack integration** required zero additional code beyond a single parameter change in the YOLO API. This demonstrates the value of mature frameworks over reinventing standard functionality.
 
-**Network reverse engineering** succeeded through systematic analysis: port scanning identified candidates, hex dump analysis revealed the protocol, and ffmpeg provided the decoder. No proprietary tools or manufacturer cooperation required.
+**Systematic network reverse engineering** succeeded through methodical analysis: port scanning identified candidates, binary inspection revealed the protocol, and ffmpeg provided the decoder. No proprietary tools or manufacturer cooperation required.
+
+**Buffer management architecture** with separate TCP capture, decode, and processing threads proved essential for real-time performance. Attempting to handle everything in a single process would have introduced unacceptable latency.
 
 ### Limitations and Improvements
 
-**Small object performance** remains the fundamental constraint. Objects below 20×20 pixels are essentially undetectable with this architecture. Solutions require either specialized tiny object detectors (e.g., SAHI tiling approach) or higher-resolution input images (computationally expensive).
+**Small object performance** remains the fundamental constraint. Objects below 20×20 pixels are essentially undetectable with this architecture. Solutions require either specialized tiny object detectors (SAHI tiling approach, feature pyramid refinement) or higher-resolution input (computationally expensive, requires better camera hardware).
 
 **Weather robustness** is insufficient for all-weather operation. The 50% performance drop under simulated noise (σ=30) indicates the model would struggle in rain or fog. Either preprocessing with learned denoisers or training on degraded data is necessary.
 
-**Tracking in occlusion** occasionally loses IDs when objects disappear behind obstacles. More sophisticated trackers with re-identification (DeepSORT with appearance features) would improve continuity.
+**Tracking through occlusion** occasionally loses IDs when objects disappear behind obstacles for extended periods. More sophisticated trackers with appearance-based re-identification (DeepSORT with ResNet features) would improve identity persistence at the cost of additional computation.
+
+**WiFi range limitation** of approximately 30 meters line-of-sight restricts operational deployment. Upgrading to 5 GHz WiFi, adding directional antennas, or implementing onboard processing would extend viable range.
 
 ### Next Steps
 
-**Dataset expansion** to VisDrone's FD002/FD003/FD004 subsets covering multiple operating conditions and fault modes would improve generalization. Training on night-time imagery specifically would address the low-light weakness.
+**Dataset expansion** to VisDrone's multi-condition subsets (FD002/FD003/FD004) covering night-time, multiple altitudes, and varied weather would improve generalization. Collecting custom footage in the target deployment environment would further tune the model.
 
-**Edge deployment** on NVIDIA Jetson Nano or similar embedded GPU would enable onboard processing, eliminating WiFi latency and bandwidth constraints. This requires ONNX optimization and INT8 quantization to fit within power budgets.
+**Edge deployment** on NVIDIA Jetson Nano or similar embedded GPU would enable onboard processing, eliminating WiFi bandwidth constraints and reducing latency to ~50ms total. This requires ONNX optimization and INT8 quantization to fit within power budgets (5-10W).
 
-**Tracking enhancements** through DeepSORT or TransTrack would maintain identities through occlusions and provide trajectory prediction for autonomous navigation.
+**Advanced tracking** through appearance-based re-identification would maintain object identities through longer occlusions. DeepSORT or TransTrack could provide this with an additional ~15ms latency per frame.
 
-**Multi-drone coordination** could fuse detections from multiple viewpoints, improving coverage and resolving occlusions through geometric reasoning.
+**Multi-drone coordination** could fuse detections from multiple viewpoints, improving coverage and resolving occlusions through geometric reasoning. This requires solving the correspondence problem (which detection in camera A matches which in camera B) and distributed state synchronization.
+
+**Model distillation** from a larger teacher model (YOLOv8m or YOLOv8l) could improve small object performance while maintaining the nano variant's speed. Knowledge distillation transfers the teacher's internal representations to the student through additional training.
+
+### Summary
+
+This project demonstrates the complete lifecycle of deploying a computer vision system: dataset analysis revealing the small object challenge, model architecture selection optimized for real-time constraints, training with domain-specific augmentation, rigorous performance evaluation exposing failure modes, production API deployment with monitoring, and hardware integration through systematic reverse engineering.
+
+The final system achieves real-time performance (27.5 FPS display, 62ms inference) on consumer hardware with competitive accuracy (33% mAP50) for aerial object detection. More importantly, it reveals the practical constraints of deploying deep learning in resource-limited environments: the model's fundamental limitation on objects below 20×20 pixels, sensitivity to noise and weather, and the engineering solutions required to bridge the gap between research benchmarks and production systems.
+
+The reverse engineering component demonstrates that lack of manufacturer documentation need not block integration. Systematic network analysis, protocol inspection, and creative pipeline design enabled full access to the drone's video stream. This approach generalizes beyond this specific hardware to any networked device transmitting standard video codecs.
+
+For defense, surveillance, or autonomous systems applications, this work provides a realistic baseline with clearly defined operational envelopes (clear weather, daytime, moderate altitude, 30m WiFi range) and a concrete roadmap for addressing current limitations through hardware upgrades, architectural improvements, and dataset expansion.
+
+The code, trained models, and documentation are available on GitHub for reproduction and extension.
 
 ---
 
-## Conclusion
-
-This project demonstrates the complete lifecycle of deploying a computer vision system: dataset analysis, model architecture selection, training with domain-specific augmentation, rigorous performance evaluation, production API deployment, and hardware integration through reverse engineering.
-
-The final system achieves real-time performance (21 FPS) on consumer hardware with competitive accuracy (33% mAP50) for aerial object detection. More importantly, it reveals the practical constraints of deploying deep learning in resource-constrained environments: the model's weakness on tiny objects, sensitivity to noise, and the necessity of engineering solutions (multi-scale training, buffer management, frame skipping) to bridge the gap between research benchmarks and production requirements.
-
-For defense, surveillance, or autonomous systems applications, this work provides a realistic baseline with clear operational envelopes (clear weather, daytime, moderate altitude) and a roadmap for addressing current limitations.
-
----
-
-`Python` · `PyTorch` · `Ultralytics YOLO` · `FastAPI` · `OpenCV` · `ONNX` · `MLflow` · `ffmpeg` · `Network Analysis` · `Computer Vision`
+`Python` · `PyTorch` · `Ultralytics YOLO` · `FastAPI` · `OpenCV` · `ffmpeg` · `Network Analysis` · `Protocol Reverse Engineering` · `ByteTrack` · `Computer Vision`

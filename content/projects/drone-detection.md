@@ -3,7 +3,7 @@ title: "Real-Time Drone Object Detection"
 date: 2026-03-10
 draft: false
 categories: ["Projects"]
-summary: "An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference."
+summary: "An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference & counter UAS interceptor simulation"
 cover:
   image: "/images/drone_detection_cover.png"
   alt: "Drone Object Detection"
@@ -22,29 +22,7 @@ featured: true
 
 ## 1- Overview
 
-**An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference.**
-
-![drone.png](/images/drone.jpg)
-
----
-
-## 2- Context & Motivation
-
-### Problem Statement
-
-Picture this: a drone hovering 50 meters above a busy intersection. From that altitude, a car is roughly the size of your thumbnail, a pedestrian is a few pixels tall, and a bicycle is nearly invisible. Yet we want to detect and track all of them in real-time, on consumer hardware, with no access to the drone manufacturer's API.
-
-This project tackles that exact challenge. Not as an academic exercise with clean datasets and unlimited compute, but as a real engineering problem with all its messiness: undocumented hardware, WiFi instability, objects too small to see, and the unforgiving constraint of real-time performance on a laptop CPU.
-
-### Technical challenges
-
-**What makes aerial object detection fundamentally different from street-level detection?**
-
-Unlike security cameras or autonomous vehicles where a person might occupy 200×400 pixels, aerial imagery presents unique challenges. Objects appear extremely small due to altitude, scenes contain 40-50 overlapping instances creating dense occlusion, and the top-down viewing angle is drastically different from what standard models have been trained on. These aren't minor variations but fundamental shifts that require specialized approaches.
-
-### Project Goal & Methodology
-
-The end result is a complete system: a trained YOLOv8 model achieving 33% mAP50 on the VisDrone benchmark, a production-ready REST API, and successful integration with live drone hardware through network protocol reverse engineering, achieving 27.5 FPS with 62ms inference latency.
+**An end-to-end computer vision system for aerial imagery, implemented and validated on a commercial drone for real-time video inference & counter UAS interceptor simulation**
 
 {{< rawhtml >}}
 <!-- Project pipeline diagram -->
@@ -84,7 +62,7 @@ The end result is a complete system: a trained YOLOv8 model achieving 33% mAP50 
 
 ---
 
-## 3- VisDrone Dataset
+## 2- VisDrone Dataset
 
 ### Understanding VisDrone
 
@@ -110,7 +88,7 @@ Beyond individual object difficulty, scenes are exceptionally dense. Images cont
 
 ---
 
-## 4- YOLOv8 Model Training
+## 3- YOLO Model Training
 
 ### The Detection Problem Formulation
 
@@ -121,6 +99,8 @@ Two-stage detectors like Faster R-CNN first generate region proposals through a 
 One-stage detectors like YOLO treat detection as a regression problem, predicting bounding boxes and class probabilities directly in a single forward pass. This enables real-time inference at 20-30 FPS on CPU, critical for live drone applications.
 
 For this project, YOLOv8 was selected specifically for its combination of speed, anchor-free design, and multi-scale detection capabilities.
+
+![Class distribution](/images/yolo_arch.png)
 
 ### YOLOv8 Architecture Deep Dive
 
@@ -186,9 +166,11 @@ The model was trained on Google Colab with a Tesla T4 GPU (16GB VRAM) for 35 epo
 
 Data was split 92% training (6,471 images) and 8% validation (548 images). The validation set was held completely separate and never seen during gradient updates, providing an unbiased estimate of generalization performance.
 
+![Robustness analysis](/images/train_yolo.png)
+
 ---
 
-## 5- Results and Analysis
+## 4- Results and Analysis
 
 ### Mean Average Precision (mAP)
 
@@ -235,7 +217,9 @@ While 33% mAP may seem low compared to standard detection benchmarks (COCO state
 | Tricycle | 18.6% | 42.4% | 17.0% | 1,045 |
 | Bicycle | 6.4% | 29.1% | 6.1% | 1,287 |
 
-![Per-class performance](/images/drone_class_performance.png)
+![drone.png](/images/result_yolo.png)
+
+![drone.png](/images/video_inference.mp4)
 
 **Key Observations**
 
@@ -271,7 +255,7 @@ Correct class but IoU below 0.75. The model tends to predict bounding boxes slig
 
 ---
 
-## 6- Robustness Testing Simulation
+## 5- Robustness Testing Simulation
 
 A production system must handle degraded conditions beyond the clean validation set. Four stress tests evaluated robustness.
 
@@ -299,7 +283,7 @@ The model is production-ready for clear-weather daytime operations with stable c
 
 ---
 
-## 7- API Deployment
+## 6- API Deployment
 
 ### API Architecture
 
@@ -323,7 +307,9 @@ The ONNX export remains valuable for future GPU deployment or edge device target
 
 ---
 
-## 8- Hardware Integration: Reverse Engineering the Syma Z3 Pro
+## 7- Hardware Integration: Reverse Engineering the Syma Z3 Pro
+
+![drone.png](/images/drone.jpg)
 
 ### The Problem: No Documentation
 
@@ -394,6 +380,37 @@ The main loop reads the latest available frame, runs YOLOv8 detection every thir
 
 ByteTrack uses a Kalman filter to predict object positions between detections and matches predictions to observations using the Hungarian algorithm. This maintains identity even when objects temporarily disappear due to occlusion or the 1-in-3 inference schedule.
 
+{{< rawhtml >}}
+<div style="margin: 1.5rem 0; font-family: monospace; font-size: 13px;">
+<pre style="background: #f5f5f5; padding: 1rem; border-radius: 6px; overflow-x: auto;">
+┌──────────────┐  TCP:8080   ┌─────────────┐  UDP:1234   ┌──────────────┐
+│ Drone Camera │────H.264────▶│   ffmpeg    │───MPEG-TS──▶│ OpenCV Drain │
+│ (Syma Z3 Pro)│              │  (decode)   │             │   (thread)   │
+└──────────────┘              └─────────────┘             └──────┬───────┘
+ 640×384 @ 25fps               Subprocess                         │
+                               Real-time                          ▼
+                                                          ┌──────────────┐
+                                                          │ YOLO26n      │
+                                                          │ Inference    │
+                                                          │ (every 3rd)  │
+                                                          └──────┬───────┘
+                                                                 │
+                                                                 ▼
+                                                          ┌──────────────┐
+                                                          │  ByteTrack   │
+                                                          │  (Kalman)    │
+                                                          └──────┬───────┘
+                                                                 │
+                                                                 ▼
+                                                          ┌──────────────┐
+                                                          │   Display    │
+                                                          │  27.5 FPS    │
+                                                          └──────────────┘
+</pre>
+</div>
+{{< /rawhtml >}}
+
+
 ### Flight Test Results
 
 Live testing with the drone in outdoor conditions yielded the following performance metrics:
@@ -409,58 +426,62 @@ Live testing with the drone in outdoor conditions yielded the following performa
 
 The zero frame drop rate indicates the buffer management strategy successfully handled the mismatch between the 25 FPS stream and ~8 FPS inference rate. The 27.5 display FPS (slightly above the stream's 25 FPS) confirms minimal latency in the pipeline.
 
-**End-to-End Latency Breakdown**
-
-The total delay from photon capture at the drone's camera to bounding box display on the laptop screen is approximately 200ms:
-
-- **TCP transmission**: ~20ms (WiFi latency over 10-20m range)
-- **ffmpeg decode**: ~30ms (H.264 decompression)
-- **YOLO inference**: ~62ms (only on every 3rd frame)
-- **ByteTrack matching**: ~5ms
-- **Display rendering**: ~10ms
-- **Network jitter buffer**: ~73ms (remaining unaccounted variance)
-
-This 200ms latency is imperceptible for human operators and acceptable for most autonomous flight applications where control loops operate at 10-20 Hz.
-
 **Session Recording**
 
 Each flight session is automatically recorded as an MP4 file with annotated bounding boxes and tracking IDs overlaid. The recordings preserve all detections for post-flight analysis and provide training data for iterative model improvement.
 
-### Technical Insights and Challenges
-
-**WiFi Stability**
-
-The drone's 2.4 GHz WiFi connection exhibits occasional packet loss beyond 30 meters line-of-sight or when multiple physical barriers intervene. The UDP restream strategy handles this gracefully: dropped packets result in missing frames, but the system recovers immediately when connectivity resumes.
-
-**Threading Coordination**
-
-Proper synchronization between the drain thread and main processing loop required careful lock management. A simple mutex protects the shared frame variable, with the main loop briefly acquiring the lock to read the current frame while the drain thread updates it continuously.
-
-**Color Space Consistency**
-
-Ultralytics YOLO expects BGR color space (OpenCV default), while ffmpeg outputs yuv420p which OpenCV converts to BGR automatically. Careful validation ensured no color channel swapping occurred through the pipeline, which would degrade detection accuracy.
+![drone.png](/images/drone_detection.gif)
 
 ---
 
-## 9- Field Validation & Experimental Protocol
+## 8- Field Validation & Experimental Protocol
 
-...
+[Work in progress]
 
 ---
+
+## 9- Bonus: Counter UAS Interceptor Simulation
+
+Beyond detection, the system demonstrates feasibility for **Counter-UAS (C-UAS)** applications through a physics-based interceptor trajectory simulation built from the ground up.
+
+**System Architecture:**
+
+The simulation implements a complete engagement loop with realistic dynamics:
+- **Threat Model**: Incoming missiles with five trajectory profiles (linear pursuit, ballistic arc, sinusoidal weaving, spiral corkscrew, zigzag hard-breaks) plus proximity-based active evasion when interceptors close within a configurable range
+- **Sensor Fusion**: 6-state Kalman filter (position + velocity) tracks noisy radar measurements with configurable process noise (σ=5 m/s²) and measurement noise (σ=15 m)
+- **Guidance Laws**: Three classical homing strategies — Proportional Navigation (PN), Pure Pursuit (PP), and Lead Pursuit (LP) — with saturated acceleration commands
+- **Multi-Engagement**: Supports N vs. N scenarios (up to 6 simultaneous missile/interceptor pairs) with shared radar picture and independent tracking per pair
+
+**Proportional Navigation Implementation:**
+
+The core guidance law computes lateral acceleration proportional to the line-of-sight rotation rate:
+
+$$\vec{a}_{\text{cmd}} = N \cdot V_c \cdot (\vec{\omega} \times \hat{R})$$
+
+Where:
+- $N$ = Navigation constant (typically 3-5, configurable via `--N` flag)
+- $V_c$ = Closing velocity (negative radial velocity component)
+- $\vec{\omega}$ = Line-of-sight angular velocity vector $\frac{\vec{R} \times \dot{\vec{R}}}{|\vec{R}|^2}$
+- $\hat{R}$ = Unit vector from interceptor to target
+
+This law ensures the interceptor leads the target appropriately, nulling the line-of-sight rate to achieve collision.
+
+
+**3D Visualization:**
+
+The simulation renders in real-time using PyVista (interactive 3-D scene):
+- Color-coded trajectories per engagement pair
+- Kalman filter estimate overlay
+- Telemetry HUD displaying range, time-to-go, and engagement status
+- Explosion effects at intercept points
+- Post-analysis plots: range convergence curves, altitude profiles, intercept timing markers
+
+
+![API performance](/images/cuas0.gif)
+![API performance](/images/cuas1.gif)
+![API performance](/images/cuas2.gif)
 
 ## Conclusion
-
-### What Worked
-
-**Multi-scale training** proved essential. Without altitude variation during training, the model would overfit to a narrow height range. Mosaic augmentation was equally critical, exposing the model to 4× more object contexts per batch.
-
-**Anchor-free detection** handled the extreme aspect ratio variations in aerial imagery better than anchor-based predecessors. Cars transition from squares (top-down) to rectangles (oblique angles) depending on camera tilt, making predefined anchors problematic.
-
-**ByteTrack integration** required zero additional code beyond a single parameter change in the YOLO API. This demonstrates the value of mature frameworks over reinventing standard functionality.
-
-**Systematic network reverse engineering** succeeded through methodical analysis: port scanning identified candidates, binary inspection revealed the protocol, and ffmpeg provided the decoder. No proprietary tools or manufacturer cooperation required.
-
-**Buffer management architecture** with separate TCP capture, decode, and processing threads proved essential for real-time performance. Attempting to handle everything in a single process would have introduced unacceptable latency.
 
 ### Limitations and Improvements
 
@@ -472,25 +493,7 @@ Ultralytics YOLO expects BGR color space (OpenCV default), while ffmpeg outputs 
 
 **WiFi range limitation** of approximately 30 meters line-of-sight restricts operational deployment. Upgrading to 5 GHz WiFi, adding directional antennas, or implementing onboard processing would extend viable range.
 
-### Next Steps
-
-**Dataset expansion** to VisDrone's multi-condition subsets (FD002/FD003/FD004) covering night-time, multiple altitudes, and varied weather would improve generalization. Collecting custom footage in the target deployment environment would further tune the model.
-
-**Edge deployment** on NVIDIA Jetson Nano or similar embedded GPU would enable onboard processing, eliminating WiFi bandwidth constraints and reducing latency to ~50ms total. This requires ONNX optimization and INT8 quantization to fit within power budgets (5-10W).
-
-**Advanced tracking** through appearance-based re-identification would maintain object identities through longer occlusions. DeepSORT or TransTrack could provide this with an additional ~15ms latency per frame.
-
-**Multi-drone coordination** could fuse detections from multiple viewpoints, improving coverage and resolving occlusions through geometric reasoning. This requires solving the correspondence problem (which detection in camera A matches which in camera B) and distributed state synchronization.
-
-**Model distillation** from a larger teacher model (YOLOv8m or YOLOv8l) could improve small object performance while maintaining the nano variant's speed. Knowledge distillation transfers the teacher's internal representations to the student through additional training.
-
-### Summary
-
-This project demonstrates the complete lifecycle of deploying a computer vision system: dataset analysis revealing the small object challenge, model architecture selection optimized for real-time constraints, training with domain-specific augmentation, rigorous performance evaluation exposing failure modes, production API deployment with monitoring, and hardware integration through systematic reverse engineering.
-
-The final system achieves real-time performance (27.5 FPS display, 62ms inference) on consumer hardware with competitive accuracy (33% mAP50) for aerial object detection. More importantly, it reveals the practical constraints of deploying deep learning in resource-limited environments: the model's fundamental limitation on objects below 20×20 pixels, sensitivity to noise and weather, and the engineering solutions required to bridge the gap between research benchmarks and production systems.
-
-The reverse engineering component demonstrates that lack of manufacturer documentation need not block integration. Systematic network analysis, protocol inspection, and creative pipeline design enabled full access to the drone's video stream. This approach generalizes beyond this specific hardware to any networked device transmitting standard video codecs.
+### Potential applications
 
 For defense, surveillance, or autonomous systems applications, this work provides a realistic baseline with clearly defined operational envelopes (clear weather, daytime, moderate altitude, 30m WiFi range) and a concrete roadmap for addressing current limitations through hardware upgrades, architectural improvements, and dataset expansion.
 

@@ -10,5 +10,4 @@ ShowReadingTime: false
 ShowBreadCrumbs: false
 ---
 
-Une sélection de mes projets et expériences en science des données et machine learning.  
 Les répertoires disponibles sont sur ma page <a href="https://github.com/elouanXP/" target="_blank">**GitHub**</a>.

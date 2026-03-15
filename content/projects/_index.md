@@ -9,6 +9,5 @@ searchHidden: true
 ShowReadingTime: false
 ShowBreadCrumbs: false
 ---
-
-A selection of end-to-end ML and data science projects.  
+  
 All source code available on <a href="https://github.com/elouanXP/" target="_blank">**GitHub**</a>.

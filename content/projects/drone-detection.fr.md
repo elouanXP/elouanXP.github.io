@@ -476,9 +476,11 @@ The simulation renders in real-time using PyVista (interactive 3-D scene):
 - Explosion effects at intercept points
 - Post-analysis plots: range convergence curves, altitude profiles, intercept timing markers
 
-
+Linear missile attack
 ![API performance](/images/cuas0.gif)
+Multiple missile attacks with spiral trajectory and counter-uas avoidance
 ![API performance](/images/cuas1.gif)
+Multiple missile attacks with sinusoidal trajectory
 ![API performance](/images/cuas2.gif)
 
 ## Conclusion

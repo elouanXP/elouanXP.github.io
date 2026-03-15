@@ -219,7 +219,7 @@ While 33% mAP may seem low compared to standard detection benchmarks (COCO state
 
 ![drone.png](/images/result_yolo.png)
 
-![drone.png](/images/video_inference.mp4)
+![drone.png](/images/video_inference.gif)
 
 **Key Observations**
 

@@ -22,6 +22,8 @@ params:
   description: "Portfolio"
   keywords: [Data Science, Machine Learning, AI, Python]
   author: Elouan Pulvéric
+  images:
+    - "/images/fugu.png"
   hideAuthor: true
   hideTags: true
   label:
